@@ -24,6 +24,11 @@ const User = mongoose.model('User', new mongoose.Schema({
   points: { type: Number, default: 0 }
 }));
 
+// Root Route
+app.get('/', (req, res) => {
+  res.send('Taskbaki backend is live');
+});
+
 // Register Route
 app.post('/register', async (req, res) => {
   const { email, password } = req.body;
