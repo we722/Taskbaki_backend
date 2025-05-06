@@ -21,5 +21,5 @@ This is the backend for the **Taskbaji CAPTCHA Earning Website**. It manages use
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/taskbaji-backend.git
+git clone https://github.com/shaminroy681/taskbaji-backend.git
 cd taskbaji-backend
