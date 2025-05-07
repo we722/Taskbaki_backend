@@ -2,12 +2,17 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 
+const authRoutes = require('./routes/authRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const taskRoutes = require('./routes/taskRoutes');
+const withdrawRoutes = require('./routes/withdrawRoutes');
+
 const app = express();
 
-// Middleware (যদি দরকার হয়)
+// Middleware
 app.use(express.json());
 
-// Database connection
+// MongoDB connection
 mongoose.connect(process.env.MONGO_URI, { 
   useNewUrlParser: true, 
   useUnifiedTopology: true 
@@ -15,10 +20,16 @@ mongoose.connect(process.env.MONGO_URI, {
 .then(() => console.log('MongoDB connected'))
 .catch(err => console.log(err));
 
-// Example route
+// Default route
 app.get('/', (req, res) => {
-  res.send('Taskbaki backend is running');
+  res.send('Taskbaji backend is running');
 });
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/task', taskRoutes);
+app.use('/api/withdraw', withdrawRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;
