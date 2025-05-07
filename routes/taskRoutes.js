@@ -8,34 +8,50 @@ const API_KEY = process.env.CAPTCHA_API_KEY;
 
 // Solve Captcha using 2Captcha
 router.post('/solve-captcha', async (req, res) => {
-  const { imageBase64 } = req.body; // Send base64 captcha image from frontend
+  const { imageBase64 } = req.body;
 
   try {
-    // Step 1: Submit captcha to 2Captcha
-    const sendRes = await fetch(`http://2captcha.com/in.php?key=${API_KEY}&method=base64&body=${imageBase64}`);
-    const sendText = await sendRes.text();
-    const [status, requestId] = sendText.split('|');
+    // Step 1: Submit captcha
+    const sendRes = await fetch('http://2captcha.com/in.php', {
+      method: 'POST',
+      body: new URLSearchParams({
+        key: API_KEY,
+        method: 'base64',
+        body: imageBase64,
+        json: 1
+      }),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
 
-    if (status !== 'OK') {
-      return res.status(400).json({ success: false, error: 'Failed to submit captcha to 2Captcha' });
+    const sendJson = await sendRes.json();
+    if (sendJson.status !== 1) {
+      return res.status(400).json({ success: false, error: 'Captcha submission failed' });
     }
 
-    // Step 2: Wait 20 seconds and get result
-    setTimeout(async () => {
-      const resultRes = await fetch(`http://2captcha.com/res.php?key=${API_KEY}&action=get&id=${requestId}`);
-      const resultText = await resultRes.text();
+    const captchaId = sendJson.request;
 
-      if (resultText.startsWith('OK|')) {
-        const solution = resultText.split('|')[1];
-        return res.json({ success: true, solution });
-      } else {
-        return res.status(400).json({ success: false, error: resultText });
+    // Step 2: Poll result (max 10 tries)
+    let solution = '';
+    for (let i = 0; i < 10; i++) {
+      await new Promise(r => setTimeout(r, 5000)); // Wait 5 seconds
+      const resultRes = await fetch(`http://2captcha.com/res.php?key=${API_KEY}&action=get&id=${captchaId}&json=1`);
+      const resultJson = await resultRes.json();
+
+      if (resultJson.status === 1) {
+        solution = resultJson.request;
+        break;
       }
-    }, 20000); // Wait 20 seconds
+    }
+
+    if (solution) {
+      return res.json({ success: true, solution });
+    } else {
+      return res.status(400).json({ success: false, error: 'Captcha not solved in time' });
+    }
 
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ success: false, error: 'Server error while solving captcha' });
+    return res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
@@ -47,10 +63,8 @@ router.post('/add-points', async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Update points
     if (correct) {
       user.points += 1;
-
       if (type === '2captcha') user.correct2Captcha += 1;
       else if (type === 'recaptcha') user.correctReCaptcha += 1;
     } else {
