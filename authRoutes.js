@@ -8,7 +8,7 @@ router.post("/register", async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ success: false, message: "User exists" });
 
-    const newUser = new User({ email, password, points: 0 });
+    const newUser = new User({ email, password, points: 0, balanceINR: 0 }); // নতুন ফিল্ড
     await newUser.save();
     res.json({ success: true, message: "User registered" });
   } catch (err) {
