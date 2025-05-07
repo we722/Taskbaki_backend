@@ -1,14 +1,22 @@
 {
   "name": "taskbaji-backend",
   "version": "1.0.0",
+  "description": "Backend for Taskbaji CAPTCHA earning system",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
+  "keywords": ["taskbaji", "captcha", "backend", "express", "mongoose"],
+  "author": "Shamin Roy",
+  "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "mongoose": "^7.0.4"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
   }
 }
